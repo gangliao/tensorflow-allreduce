@@ -73,7 +73,7 @@ class MPITests(tf.test.TestCase):
         with mpi.Session() as session:
             rank = session.run(mpi.rank())
             self.assertEqual(true_rank, rank)
-	    session.close()
+
     def test_mpi_size(self):
         """Test that the size returned by mpi.size() is correct."""
         _, true_size = mpi_env_rank_and_size()

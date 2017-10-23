@@ -1,24 +1,10 @@
 # Ops that communicate with other processes via MPI.
 
-package(
-    default_visibility = ["//tensorflow:internal"],
-)
+package(default_visibility = [
+    "//tensorflow:__subpackages__",
+])
 
 licenses(["notice"])  # Apache 2.0
-
-load("//tensorflow:tensorflow.bzl", "tf_py_test")
-load("//tensorflow:tensorflow.bzl", "cuda_py_test")
-load("//tensorflow:tensorflow.bzl", "sycl_py_test")
-
-# CPU only tests should use tf_py_test, GPU tests use cuda_py_test
-# # Please avoid the py_tests and cuda_py_tests (plural) while we
-# # fix the shared/overbroad dependencies.
-
-#package(default_visibility = [
-#    "//tensorflow:__subpackages__",
-#])
-#
-#licenses(["notice"])  # Apache 2.0
 
 filegroup(
     name = "all_files",

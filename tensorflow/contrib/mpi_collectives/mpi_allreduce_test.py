@@ -1,9 +1,12 @@
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+
 import numpy as np
 import os
 import tensorflow as tf
-import tensorflow.contrib.mpi as mpi
+import tensorflow.contrib.mpi_collectives as mpi
 from tensorflow.python.platform import test
-
 
 average_allreduce = False
 max_wrong_count = -1
@@ -27,15 +30,14 @@ class AllreduceTest(test.TestCase):
                     wrong_count += 1
                 print("{}\t{}\t{}\t{}\t{}\t{}"
                       .format(my_rank, i, j, out_loc_red[i][j],
-                              out_all_red[i][j], suffix),
-                      flush=True)
+                              out_all_red[i][j], suffix))
                 if max_wrong_count > 0 and wrong_count >= max_wrong_count:
                     return
 
     def test_mpi_allreduce(self):
         # Get MPI rank
-        my_rank = int(os.environ['PMI_RANK'])
-        num_ranks = int(os.environ['PMI_SIZE'])
+        my_rank = int(os.environ['OMPI_COMM_WORLD_RANK'])
+        num_ranks = int(os.environ['OMPI_COMM_WORLD_SIZE'])
 
         stages = 13
         batch_size = 1331
@@ -113,7 +115,7 @@ class AllreduceTest(test.TestCase):
 
             for i in range(1000):
                 if i % 100 == 0:
-                    print("{}: iter {}".format(my_rank, i), flush=True)
+                    print("{}: iter {}".format(my_rank, i))
                 feed_dict = {inputs: input_feed}
                 out_all_red, out_loc_red \
                     = sess.run([all_reduced, local_reduced],
@@ -121,7 +123,7 @@ class AllreduceTest(test.TestCase):
 
                 if not np.allclose(out_loc_red, my_correct) or \
                    not np.allclose(out_all_red, our_correct):
-                    print("Test incorrect on iter {}".format(i), flush=True)
+                    print("Test incorrect on iter {}".format(i))
                     self.dumpFailure(my_rank, num_ranks, out_loc_red,
                                      my_correct, out_all_red, our_correct)
                     assert(np.allclose(out_loc_red, my_correct) and
