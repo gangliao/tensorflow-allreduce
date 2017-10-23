@@ -24,7 +24,7 @@ import itertools
 
 import tensorflow as tf
 
-import tensorflow.contrib.mpi as mpi
+import tensorflow.contrib.mpi_collectives as mpi
 
 
 def mpi_env_rank_and_size():
@@ -70,20 +70,20 @@ class MPITests(tf.test.TestCase):
     def test_mpi_rank(self):
         """Test that the rank returned by mpi.rank() is correct."""
         true_rank, _ = mpi_env_rank_and_size()
-        with self.test_session() as session:
+        with mpi.Session() as session:
             rank = session.run(mpi.rank())
             self.assertEqual(true_rank, rank)
-
+	    session.close()
     def test_mpi_size(self):
         """Test that the size returned by mpi.size() is correct."""
         _, true_size = mpi_env_rank_and_size()
-        with self.test_session() as session:
+        with mpi.Session() as session:
             size = session.run(mpi.size())
             self.assertEqual(true_size, size)
 
     def test_mpi_allreduce_cpu(self):
         """Test on CPU that the allreduce correctly sums 1D, 2D, 3D tensors."""
-        with self.test_session() as session:
+        with mpi.Session() as session:
             size = session.run(mpi.size())
 
             dtypes = [tf.int32, tf.float32]
@@ -123,12 +123,12 @@ class MPITests(tf.test.TestCase):
 
         no_gpus = tf.GPUOptions(visible_device_list="")
         cpu_config = tf.ConfigProto(gpu_options=no_gpus)
-        with self.test_session(config=cpu_config) as session:
+        with mpi.Session(config=cpu_config) as session:
             local_rank = session.run(mpi.local_rank())
 
         one_gpu = tf.GPUOptions(visible_device_list=str(local_rank))
         gpu_config = tf.ConfigProto(gpu_options=one_gpu)
-        with self.test_session(config=gpu_config) as session:
+        with mpi.Session(config=gpu_config) as session:
             size = session.run(mpi.size())
 
             dtype = tf.float32
@@ -158,7 +158,7 @@ class MPITests(tf.test.TestCase):
     def test_mpi_allreduce_error(self):
         """Test that the allreduce raises an error if different ranks try to
         send tensors of different rank or dimension."""
-        with self.test_session() as session:
+        with mpi.Session() as session:
             rank = session.run(mpi.rank())
             size = session.run(mpi.size())
 
@@ -186,7 +186,7 @@ class MPITests(tf.test.TestCase):
     def test_mpi_allreduce_type_error(self):
         """Test that the allreduce raises an error if different ranks try to
         send tensors of different type."""
-        with self.test_session() as session:
+        with mpi.Session() as session:
             rank = session.run(mpi.rank())
             size = session.run(mpi.size())
 
@@ -203,7 +203,7 @@ class MPITests(tf.test.TestCase):
 
     def test_mpi_allgather(self):
         """Test that the allgather correctly gathers 1D, 2D, 3D tensors."""
-        with self.test_session() as session:
+        with mpi.Session() as session:
             size = session.run(mpi.size())
             rank = session.run(mpi.rank())
 
@@ -229,7 +229,7 @@ class MPITests(tf.test.TestCase):
     def test_mpi_allgather_variable_size(self):
         """Test that the allgather correctly gathers 1D, 2D, 3D tensors,
         even if those tensors have different sizes along the first dim."""
-        with self.test_session() as session:
+        with mpi.Session() as session:
             size = session.run(mpi.size())
             rank = session.run(mpi.rank())
 
@@ -265,7 +265,7 @@ class MPITests(tf.test.TestCase):
     def test_mpi_allgather_error(self):
         """Test that the allgather returns an error if any dimension besides
         the first is different among the tensors being gathered."""
-        with self.test_session() as session:
+        with mpi.Session() as session:
             rank = session.run(mpi.rank())
             size = session.run(mpi.size())
 
@@ -282,7 +282,7 @@ class MPITests(tf.test.TestCase):
     def test_mpi_allgather_type_error(self):
         """Test that the allgather returns an error if the types being gathered
         differ among the processes"""
-        with self.test_session() as session:
+        with mpi.Session() as session:
             rank = session.run(mpi.rank())
             size = session.run(mpi.size())
 
